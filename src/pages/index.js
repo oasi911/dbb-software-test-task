@@ -1,11 +1,88 @@
-import Head from 'next/head'
-import Image from 'next/image'
-import { Inter } from 'next/font/google'
-import styles from '@/styles/Home.module.css'
-
-const inter = Inter({ subsets: ['latin'] })
+import { useState, useEffect } from "react";
+import Head from "next/head";
+import { Container, Flex, Button } from "@chakra-ui/react";
+import { useAuth } from "@/components/context/authContext";
+import FileList from "@/components/FileList";
+import refreshAccessToken from "@/components/refreshAccessToken";
 
 export default function Home() {
+  const [files, setFiles] = useState([]);
+  const [isClient, setIsClient] = useState(false);
+  const { authToken } = useAuth();
+
+  const sortFiles = (files) => {
+    const folders = files.filter((file) => file[".tag"] === "folder");
+    const otherFiles = files.filter((file) => file[".tag"] !== "folder");
+
+    folders.sort((a, b) => a.name.localeCompare(b.name));
+    otherFiles.sort((a, b) => a.name.localeCompare(b.name));
+
+    return [...folders, ...otherFiles];
+  };
+
+  const fetchFiles = async () => {
+    try {
+      const response = await fetch(
+        "https://api.dropboxapi.com/2/files/list_folder",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            path: "",
+          }),
+        }
+      );
+
+      if (!response.ok && response.status === 401) {
+        const { refreshToken } = useAuth();
+        if (refreshToken) {
+          const newToken = await refreshAccessToken(refreshToken);
+          if (newToken) {
+            updateToken(newToken, refreshToken);
+            return fetchFiles();
+          }
+        }
+      }
+
+      const data = await response.json();
+
+      setFiles((prevFiles) => {
+        const combinedFiles = [
+          ...prevFiles,
+          ...data.entries.filter(
+            (newFile) => !prevFiles.some((file) => file.id === newFile.id)
+          ),
+        ];
+
+        return sortFiles(combinedFiles);
+      });
+    } catch (error) {
+      console.error("Error fetching files:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (authToken) {
+      fetchFiles();
+    }
+    setIsClient(true);
+  }, [authToken]);
+
+  const handleLogin = () => {
+    const CLIENT_ID = "s4ngwjneimiqbs2";
+    const REDIRECT_URI = "http://localhost:3000/auth";
+    window.location.href = `https://www.dropbox.com/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(
+      REDIRECT_URI
+    )}&response_type=code`;
+  };
+
+  if (!isClient) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <>
       <Head>
@@ -14,101 +91,15 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className={`${styles.main} ${inter.className}`}>
-        <div className={styles.description}>
-          <p>
-            Get started by editing&nbsp;
-            <code className={styles.code}>src/pages/index.js</code>
-          </p>
-          <div>
-            <a
-              href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              By{' '}
-              <Image
-                src="/vercel.svg"
-                alt="Vercel Logo"
-                className={styles.vercelLogo}
-                width={100}
-                height={24}
-                priority
-              />
-            </a>
-          </div>
-        </div>
-
-        <div className={styles.center}>
-          <Image
-            className={styles.logo}
-            src="/next.svg"
-            alt="Next.js Logo"
-            width={180}
-            height={37}
-            priority
-          />
-        </div>
-
-        <div className={styles.grid}>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2>
-              Docs <span>-&gt;</span>
-            </h2>
-            <p>
-              Find in-depth information about Next.js features and&nbsp;API.
-            </p>
-          </a>
-
-          <a
-            href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2>
-              Learn <span>-&gt;</span>
-            </h2>
-            <p>
-              Learn about Next.js in an interactive course with&nbsp;quizzes!
-            </p>
-          </a>
-
-          <a
-            href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2>
-              Templates <span>-&gt;</span>
-            </h2>
-            <p>
-              Discover and deploy boilerplate example Next.js&nbsp;projects.
-            </p>
-          </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2>
-              Deploy <span>-&gt;</span>
-            </h2>
-            <p>
-              Instantly deploy your Next.js site to a shareable URL
-              with&nbsp;Vercel.
-            </p>
-          </a>
-        </div>
-      </main>
+      <Container as="main" maxW="container.lg">
+        {!authToken ? (
+          <Button onClick={handleLogin}>Login with Dropbox</Button>
+        ) : (
+          <>
+            <FileList files={files} />
+          </>
+        )}
+      </Container>
     </>
-  )
+  );
 }
