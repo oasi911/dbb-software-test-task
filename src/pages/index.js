@@ -47,16 +47,7 @@ export default function Home() {
 
       const data = await response.json();
 
-      setFiles((prevFiles) => {
-        const combinedFiles = [
-          ...prevFiles,
-          ...data.entries.filter(
-            (newFile) => !prevFiles.some((file) => file.id === newFile.id)
-          ),
-        ];
-
-        return sortFiles(combinedFiles);
-      });
+      setFiles(sortFiles(data.entries));
     } catch (error) {
       console.error("Error fetching files:", error);
     }

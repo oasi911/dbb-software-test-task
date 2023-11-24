@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Flex, Input, IconButton, useToast, Button } from "@chakra-ui/react";
+import { Input, IconButton, useToast, Button, Flex } from "@chakra-ui/react";
 import { CheckIcon, CloseIcon } from "@chakra-ui/icons";
 import { useAuth } from "./context/authContext";
 
@@ -68,7 +68,7 @@ const CreateFolder = ({ onChange, currentPath }) => {
   return (
     <>
       {isCreating ? (
-        <>
+        <Flex w="250px" gap="5px">
           <Input
             value={folderName}
             onChange={(e) => setFolderName(e.target.value)}
@@ -85,7 +85,7 @@ const CreateFolder = ({ onChange, currentPath }) => {
             icon={<CloseIcon />}
             onClick={cancelCreation}
           />
-        </>
+        </Flex>
       ) : (
         <Button w="250px" onClick={() => setIsCreating(true)}>
           Create New Folder

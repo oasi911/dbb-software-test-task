@@ -2,8 +2,9 @@ import { Flex, Text, Tooltip } from "@chakra-ui/react";
 import Thumbnail from "./Thumbnail";
 import { useRouter } from "next/router";
 import FileText from "./FileText";
+import FileMenu from "./FileMenu";
 
-const FileItem = ({ file }) => {
+const FileItem = ({ file, onChange }) => {
   const router = useRouter();
 
   const handleFolderClick = () => {
@@ -33,7 +34,10 @@ const FileItem = ({ file }) => {
           isFolder={file[".tag"] === "folder"}
         />
       </Flex>
-      <FileText file={file} />
+      <Flex w="100%" justifyContent="space-between" alignItems="center">
+        <FileText file={file} />
+        <FileMenu file={file} onChange={onChange} />
+      </Flex>
     </Flex>
   );
 };

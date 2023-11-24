@@ -55,7 +55,11 @@ const Main = ({ title, files, onChange, currentPath }) => {
             <Heading size="lg" mt="30px">
               main{currentPath}
             </Heading>
-            <FileList files={files} />
+            <FileList
+              files={files}
+              onChange={onChange}
+              currentPath={currentPath}
+            />
           </>
         )}
       </Container>

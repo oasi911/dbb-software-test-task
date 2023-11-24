@@ -49,7 +49,7 @@ const FolderContent = () => {
     }
   }, [folderPath, authToken, currentPath]);
 
-  const onChange = () => {
+  const onChangeFolder = () => {
     fetchFolderContent(currentPath);
   };
 
@@ -60,7 +60,7 @@ const FolderContent = () => {
   return (
     <Main
       title={folderPath}
-      onChange={onChange}
+      onChange={onChangeFolder}
       currentPath={currentPath}
       files={folderContent}
     />
