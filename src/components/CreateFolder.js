@@ -4,21 +4,28 @@ import { CheckIcon, CloseIcon } from "@chakra-ui/icons";
 import { useAuth } from "./context/authContext";
 
 const CreateFolder = ({ onChange, currentPath }) => {
+  // State to control the folder creation UI
   const [isCreating, setIsCreating] = useState(false);
+  // State to store the new folder name
   const [folderName, setFolderName] = useState("");
+  // Auth context to access the authentication token
   const { authToken } = useAuth();
+  // Chakra UI's toast for showing messages
   const toast = useToast();
 
   const createFolder = async () => {
+    // Constructing the full path for the new folder
     const fullPath = `${currentPath}/${folderName.trim()}`.replace(
-      /\/\/+/g,
+      /\/\/+/g, // Replacing double slashes with a single slash
       "/"
     );
-
-    if (!folderName.trim()) {
+    const validNameRegex = /^[A-Za-z0-9]+$/;
+    // Validate folder name to ensure it's not empty
+    if (!folderName.trim() || !validNameRegex.test(folderName.trim())) {
       toast({
-        title: "Error",
-        description: "Folder name cannot be empty",
+        title: "Invalid Folder Name",
+        description:
+          "Folder name must consist of English letters or digits only.",
         status: "error",
         duration: 3000,
         isClosable: true,
@@ -27,17 +34,18 @@ const CreateFolder = ({ onChange, currentPath }) => {
     }
 
     try {
+      // Making API call to create a new folder in Dropbox
       const response = await fetch(
         "https://api.dropboxapi.com/2/files/create_folder_v2",
         {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${authToken}`,
+            Authorization: `Bearer ${authToken}`, // Using authToken for Dropbox API authorization
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            path: fullPath,
-            autorename: true,
+            path: fullPath, // The path where the folder will be created
+            autorename: true, // Auto-renaming in case of name conflicts
           }),
         }
       );
@@ -46,10 +54,13 @@ const CreateFolder = ({ onChange, currentPath }) => {
         throw new Error("Network response was not ok");
       }
 
+      // Triggering the onChange callback to refresh the folder content
       onChange();
+      // Resetting state to close the creation UI
       setIsCreating(false);
       setFolderName("");
     } catch (error) {
+      // Showing error message in case of failure
       toast({
         title: "Error creating folder",
         description: error.message,

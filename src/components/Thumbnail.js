@@ -4,10 +4,13 @@ import { Image } from "@chakra-ui/react";
 import { useAuth } from "./context/authContext";
 
 const Thumbnail = ({ path, isFolder }) => {
+  // State for the thumbnail URL and loading status
   const [thumbnailUrl, setThumbnailUrl] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  // Auth context for access token
   const { authToken } = useAuth();
 
+  // Function to fetch the thumbnail image from Dropbox
   async function fetchThumbnail(path, authToken) {
     try {
       const response = await fetch(
@@ -25,10 +28,12 @@ const Thumbnail = ({ path, isFolder }) => {
         }
       );
 
+      // Fallback to a default image if fetching fails
       if (!response.ok) {
         return "/file.png";
       }
 
+      // Create a URL from the response blob (image data)
       return URL.createObjectURL(await response.blob());
     } catch (error) {
       console.error("Error fetching thumbnail:", error);
@@ -36,11 +41,14 @@ const Thumbnail = ({ path, isFolder }) => {
     }
   }
 
+  // Effect to fetch the thumbnail on component mount or update
   useEffect(() => {
     if (isFolder) {
+      // If it's a folder, use a default folder icon
       setThumbnailUrl("/folder.png");
       setIsLoading(false);
     } else {
+      // Fetch the thumbnail from Dropbox
       fetchThumbnail(path, authToken)
         .then((url) => {
           setThumbnailUrl(url);
@@ -53,10 +61,12 @@ const Thumbnail = ({ path, isFolder }) => {
     }
   }, [path, authToken, isFolder]);
 
+  // Show a loading spinner while the thumbnail is being fetched
   if (isLoading) {
     return <CircularProgress isIndeterminate color="green" />;
   }
 
+  // Render the thumbnail image
   return <Image src={thumbnailUrl} alt="Thumbnail" />;
 };
 

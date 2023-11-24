@@ -5,15 +5,23 @@ import Main from "@/components/layout/Main";
 import { Text } from "@chakra-ui/react";
 
 const FolderContent = () => {
+  // State to store the content of the current folder
   const [folderContent, setFolderContent] = useState([]);
+  // State to manage loading status
   const [loading, setLoading] = useState(false);
+  // Using Next.js router to get the folder path from the URL
   const { folderPath } = useRouter().query;
+  // State to track if the component has mounted on the client
+  const [isClient, setIsClient] = useState(false);
+  // Accessing the authentication token from the auth context
   const { authToken } = useAuth();
 
+  // Constructing the current path from the folderPath array
   const currentPath = Array.isArray(folderPath)
     ? "/" + folderPath.join("/")
     : "";
 
+  // Function to fetch the content of the current folder from Dropbox
   const fetchFolderContent = async (path) => {
     setLoading(true);
 
@@ -35,28 +43,33 @@ const FolderContent = () => {
       }
 
       const data = await response.json();
-      setFolderContent(data.entries);
+      setFolderContent(data.entries); // Update state with the folder's content
     } catch (error) {
       console.error("Error fetching folder content:", error);
     } finally {
-      setLoading(false);
+      setLoading(false); // Set loading to false regardless of outcome
     }
   };
 
+  // Effect to fetch folder content when the path or auth token changes
   useEffect(() => {
+    setIsClient(true);
     if (authToken && folderPath) {
       fetchFolderContent(currentPath);
     }
   }, [folderPath, authToken, currentPath]);
 
+  // Function to refresh the folder content
   const onChangeFolder = () => {
     fetchFolderContent(currentPath);
   };
 
-  if (loading) {
+  // Show loading text when the content is being fetched
+  if (loading || !isClient) {
     return <Text>Loading...</Text>;
   }
 
+  // Render the Main component with the folder's content
   return (
     <Main
       title={folderPath}
