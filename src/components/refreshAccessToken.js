@@ -1,4 +1,7 @@
 const refreshAccessToken = async (refreshToken) => {
+  const CLIENT_ID = "s4ngwjneimiqbs2";
+  const CLIENT_SECRET = "n2kfwfull5z25o5";
+
   try {
     const response = await fetch("https://api.dropboxapi.com/oauth2/token", {
       method: "POST",

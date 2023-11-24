@@ -1,15 +1,18 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import Head from "next/head";
-import { Container, Heading, Text } from "@chakra-ui/react";
 import { useAuth } from "@/components/context/authContext";
-import FileList from "@/components/FileList";
+import Main from "@/components/layout/Main";
+import { Text } from "@chakra-ui/react";
 
 const FolderContent = () => {
   const [folderContent, setFolderContent] = useState([]);
   const [loading, setLoading] = useState(false);
   const { folderPath } = useRouter().query;
   const { authToken } = useAuth();
+
+  const currentPath = Array.isArray(folderPath)
+    ? "/" + folderPath.join("/")
+    : "";
 
   const fetchFolderContent = async (path) => {
     setLoading(true);
@@ -42,26 +45,25 @@ const FolderContent = () => {
 
   useEffect(() => {
     if (authToken && folderPath) {
-      const path = Array.isArray(folderPath) ? "/" + folderPath.join("/") : "";
-      fetchFolderContent(path);
+      fetchFolderContent(currentPath);
     }
-  }, [folderPath, authToken]);
+  }, [folderPath, authToken, currentPath]);
+
+  const onFolderCreated = () => {
+    fetchFolderContent(currentPath);
+  };
+
+  if (loading) {
+    return <Text>Loading...</Text>;
+  }
 
   return (
-    <>
-      <Head>
-        <title>{folderPath}</title>
-        <meta name="description" content={`Viewing folder: ${folderPath}`} />
-      </Head>
-      <Container as="main" maxW="container.lg">
-        <Heading>Folder: {folderPath}</Heading>
-        {loading ? (
-          <Text>Loading...</Text>
-        ) : (
-          <FileList authToken={authToken} files={folderContent} />
-        )}
-      </Container>
-    </>
+    <Main
+      title={folderPath}
+      onFolderCreated={onFolderCreated}
+      currentPath={currentPath}
+      files={folderContent}
+    />
   );
 };
 
