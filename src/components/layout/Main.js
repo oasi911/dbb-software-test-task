@@ -1,11 +1,12 @@
 import Head from "next/head";
 import { Container } from "@chakra-ui/layout";
-import { Button, Flex, Text } from "@chakra-ui/react";
-import CreateFolder from "../CreateFolder";
+import { Button, Flex, Text, Heading } from "@chakra-ui/react";
 import { useAuth } from "../context/authContext";
 import FileList from "../FileList";
+import CreateFolder from "../CreateFolder";
+import UploadFile from "../UploadFile";
 
-const Main = ({ title, files, onFolderCreated, currentPath }) => {
+const Main = ({ title, files, onChange, currentPath }) => {
   const { authToken } = useAuth();
 
   const handleLogin = () => {
@@ -35,18 +36,25 @@ const Main = ({ title, files, onFolderCreated, currentPath }) => {
             gap="25px"
           >
             <Text>Please login with Dropbox to continue.</Text>
-            <Button align="center" onClick={handleLogin}>
+            <Button
+              align="center"
+              bg="#3d67ff"
+              color="white"
+              _hover={{ bg: "#3153cc" }}
+              onClick={handleLogin}
+            >
               Login with Dropbox
             </Button>
           </Flex>
         ) : (
           <>
-            <Flex>
-              <CreateFolder
-                onFolderCreated={onFolderCreated}
-                currentPath={currentPath}
-              />
+            <Flex w="100%" mt="30px" alignItems="center" gap="25px">
+              <CreateFolder onChange={onChange} currentPath={currentPath} />
+              <UploadFile onChange={onChange} currentPath={currentPath} />
             </Flex>
+            <Heading size="lg" mt="30px">
+              main{currentPath}
+            </Heading>
             <FileList files={files} />
           </>
         )}
@@ -56,31 +64,3 @@ const Main = ({ title, files, onFolderCreated, currentPath }) => {
 };
 
 export default Main;
-
-// {
-//   !authToken ? (
-//     <Flex
-//       width="100%"
-//       height="100vh"
-//       alignItems="center"
-//       justifyContent="center"
-//       direction="column"
-//       gap="25px"
-//     >
-//       <Text>Please login with Dropbox to continue.</Text>
-//       <Button align="center" onClick={handleLogin}>
-//         Login with Dropbox
-//       </Button>
-//     </Flex>
-//   ) : (
-//     <>
-//       <Flex>
-//         <CreateFolder
-//           onFolderCreated={onFolderCreated}
-//           currentPath={""}
-//         />
-//       </Flex>
-//       <FileList files={files} />
-//     </>
-//   );
-// }

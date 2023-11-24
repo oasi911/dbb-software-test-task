@@ -3,7 +3,7 @@ import { Flex, Input, IconButton, useToast, Button } from "@chakra-ui/react";
 import { CheckIcon, CloseIcon } from "@chakra-ui/icons";
 import { useAuth } from "./context/authContext";
 
-const CreateFolder = ({ onFolderCreated, currentPath }) => {
+const CreateFolder = ({ onChange, currentPath }) => {
   const [isCreating, setIsCreating] = useState(false);
   const [folderName, setFolderName] = useState("");
   const { authToken } = useAuth();
@@ -46,7 +46,7 @@ const CreateFolder = ({ onFolderCreated, currentPath }) => {
         throw new Error("Network response was not ok");
       }
 
-      onFolderCreated();
+      onChange();
       setIsCreating(false);
       setFolderName("");
     } catch (error) {
@@ -66,13 +66,7 @@ const CreateFolder = ({ onFolderCreated, currentPath }) => {
   };
 
   return (
-    <Flex
-      w="250px"
-      h="100px"
-      alignItems="center"
-      justifyContent="center"
-      gap="5px"
-    >
+    <>
       {isCreating ? (
         <>
           <Input
@@ -93,11 +87,11 @@ const CreateFolder = ({ onFolderCreated, currentPath }) => {
           />
         </>
       ) : (
-        <Button w="100%" onClick={() => setIsCreating(true)}>
+        <Button w="250px" onClick={() => setIsCreating(true)}>
           Create New Folder
         </Button>
       )}
-    </Flex>
+    </>
   );
 };
 

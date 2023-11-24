@@ -69,7 +69,7 @@ export default function Home() {
     setIsClient(true);
   }, [authToken]);
 
-  const onFolderCreated = () => {
+  const onChange = () => {
     fetchFiles();
   };
 
@@ -78,11 +78,6 @@ export default function Home() {
   }
 
   return (
-    <Main
-      title={"Main"}
-      files={files}
-      currentPath={""}
-      onFolderCreated={onFolderCreated}
-    />
+    <Main title={"Main"} files={files} currentPath={""} onChange={onChange} />
   );
 }
